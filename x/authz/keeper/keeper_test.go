@@ -75,11 +75,12 @@ func (s *TestSuite) SetupTest() {
 	banktypes.RegisterInterfaces(s.encCfg.InterfaceRegistry)
 	banktypes.RegisterMsgServer(s.baseApp.MsgServiceRouter(), s.bankKeeper)
 
-	env := runtime.NewEnvironment(storeService, log.NewNopLogger(), runtime.EnvWithRouterService(s.baseApp.GRPCQueryRouter(), s.baseApp.MsgServiceRouter()))
+	env := runtime.NewEnvironment(storeService, log.NewNopLogger(), runtime.EnvWithQueryRouterService(s.baseApp.GRPCQueryRouter()), runtime.EnvWithMsgRouterService(s.baseApp.MsgServiceRouter()))
 	s.authzKeeper = authzkeeper.NewKeeper(env, s.encCfg.Codec, s.accountKeeper)
 
 	queryHelper := baseapp.NewQueryServerTestHelper(s.ctx, s.encCfg.InterfaceRegistry)
 	authz.RegisterQueryServer(queryHelper, s.authzKeeper)
+	authz.RegisterMsgServer(s.baseApp.MsgServiceRouter(), s.authzKeeper)
 	queryClient := authz.NewQueryClient(queryHelper)
 	s.queryClient = queryClient
 
